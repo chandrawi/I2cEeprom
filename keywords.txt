@@ -1,0 +1,25 @@
+# Syntax Coloring Map For LoRa-master Library
+
+# Datatypes (KEYWORD1)
+I2cEeprom	KEYWORD1
+EEPROM	KEYWORD1
+Eeprom	KEYWORD1
+eeprom	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+begin	KEYWORD2
+end	KEYWORD2
+read	KEYWORD2
+write	KEYWORD2
+update	KEYWORD2
+getSize	KEYWORD2
+setPageSize	KEYWORD2
+getPageSize	KEYWORD2
+setWriteTime	KEYWORD2
+getWriteTime	KEYWORD2
+get	KEYWORD2
+put	KEYWORD2
+
+# Instances (KEYWORD2)
+
+# Constants (LITERAL1)
