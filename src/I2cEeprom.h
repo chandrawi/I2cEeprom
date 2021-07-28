@@ -81,6 +81,7 @@ class I2cEeprom
         uint8_t _bufferSize;
         uint8_t _nAddressBytes;
         uint32_t _writeTime;
+        uint32_t _lastWriteMicros;
 
         void _init(uint8_t deviceAddress, uint16_t deviceSize);
 
@@ -89,6 +90,8 @@ class I2cEeprom
 
         bool _writeBytes(uint16_t address, uint8_t* data, uint16_t nBytes);
         bool _writeData(uint16_t address, uint8_t* data, uint16_t nBytes, bool increment);
+
+        void _waitWrite();
 };
 
 #endif

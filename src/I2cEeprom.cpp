@@ -100,7 +100,7 @@ int16_t I2cEeprom::getSize()
 {
     int16_t size = -1;
     uint8_t oldData0, oldData[11], matchData = 0x11, checkData = 0xEE;
-    uint16_t addr, addrA, addrB;
+    uint16_t addr;
     uint8_t i;
 
     // remember old values
@@ -189,7 +189,6 @@ void I2cEeprom::_init(uint8_t deviceAddress, uint16_t deviceSize)
         _pageSize = 64;
     }
     else{
-        _deviceSize = getSize();
         _nAddressBytes = 2;
         _pageSize = 128;
     }
@@ -202,7 +201,7 @@ void I2cEeprom::_init(uint8_t deviceAddress, uint16_t deviceSize)
 
 uint16_t I2cEeprom::_readBytes(uint16_t address, uint8_t* data, uint16_t nBytes)
 {
-    uint16_t i = 0;
+    _waitWrite();
     
     Wire.beginTransmission(_deviceAddress);
     if (_nAddressBytes == 2) Wire.write(address >> 8);   // MSB
@@ -210,8 +209,8 @@ uint16_t I2cEeprom::_readBytes(uint16_t address, uint8_t* data, uint16_t nBytes)
     Wire.endTransmission();
     
     Wire.requestFrom(_deviceAddress, nBytes);
+    uint16_t i = 0;
     while(Wire.available()) data[i++] = Wire.read();
-    
     return i;
 }
 
@@ -237,20 +236,15 @@ uint16_t I2cEeprom::_readData(uint16_t address, uint8_t* data, uint16_t nBytes)
 
 bool I2cEeprom::_writeBytes(uint16_t address, uint8_t* data, uint16_t nBytes)
 {
+    _waitWrite();
+
     Wire.beginTransmission(_deviceAddress);
     if (_nAddressBytes == 2) Wire.write(address >> 8);   // MSB
     Wire.write(address & 0xFF); // LSB
     Wire.write(data, nBytes);
-    int8_t stat = Wire.endTransmission();
+    uint8_t stat = Wire.endTransmission();
     
-    uint32_t tWrite = micros();
-    while ((micros() - tWrite) <= _writeTime)
-    {
-        Wire.beginTransmission(_deviceAddress);
-        if (Wire.endTransmission() == 0) break;
-        yield();
-    }
-    
+    _lastWriteMicros = micros();
     if (stat == 0) return true;
     return false;
 }
@@ -275,4 +269,13 @@ bool I2cEeprom::_writeData(uint16_t address, uint8_t* data, uint16_t nBytes, boo
     }
     
     return true;
+}
+
+void I2cEeprom::_waitWrite()
+{
+    while ((micros() - _lastWriteMicros) < _writeTime) {
+        Wire.beginTransmission(_deviceAddress);
+        if (Wire.endTransmission() == 0) break;
+        yield();
+    }
 }
